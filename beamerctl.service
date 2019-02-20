@@ -1,0 +1,13 @@
+[Unit]
+Description=heizberry
+After=network-online.target
+
+[Service]
+Type=Simple
+ExecStart=/srv/herizberry/heizberry.py
+
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

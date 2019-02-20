@@ -1,0 +1,3 @@
+paho_mqtt==1.3.0
+schedule==0.4.3
+python-eq3bt==0.1.10
