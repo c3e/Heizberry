@@ -11,13 +11,16 @@ import paho.mqtt.client as mqtt
 from eq3bt import Thermostat
 
 thermostatBallpit = Thermostat('00:1A:22:0D:BE:EE')
+thermostatBallpit = Thermostat('00:1A:22:0D:BE:EE')
 
-global temperature_off = 12
-global temperature_on = 19
+temperature_off = 12
+temperature_on = 19
 
 
 def on_connect(client, userdata, flags, rc):
     log.debug("Connected with result code " + str(rc))
+
+    client.subscribe("foobar/oben/baellebad/heizung/action")
 
     sendReadings()
 
@@ -30,14 +33,14 @@ def on_message(client, userdata, message):
     msg = message.payload.decode("utf-8")
     log.debug('received message: %s from %s', format(msg), format(message.topic))
 
-    if (message.topic == "foobar/oben/baellebad/heizung/action")
+    if (message.topic == "foobar/oben/baellebad/heizung/action"):
         if (msg == "on"):
             thermostatBallpit.target_temperature=temperature_on
-        else
-            if (msg == "on"):
-                thermostatBallpit.target_temperature=temperature_on
-            else
-                thermostatBallpit.target_temperature=msg
+        else:
+            if (msg == "off"):
+                thermostatBallpit.target_temperature=temperature_off
+            else:
+                thermostatBallpit.target_temperature=int(msg)
 
 
 
@@ -50,13 +53,15 @@ def sendReadings():
 
     # Send target temperatures
     temp=thermostatBallpit.target_temperature
-    if(temp == temperature_on)
-        temp = temp + " on"
+    if(temp == temperature_on):
+        temp = str(temp) + " on"
 
-    if(temp == temperature_off)
-        temp = temp + " off"
+    if(temp == temperature_off):
+        temp = str(temp) + " off"
 
-    client.publish("foobar/oben/baellebad/status", temp, qos=1, retain=True)
+    client.publish("foobar/oben/baellebad/heizung/status", temp, qos=1, retain=True)
+    
+    log.debug('sent readings')
 
 
 def terminate(signum, frame):
@@ -88,12 +93,24 @@ if __name__ == '__main__':
     else:
         log.setLevel(logging.WARN)
 
+    log.debug('start mqtt client')
     client = mqtt.Client("Heizberry_oben")
     client.on_connect = on_connect
     client.on_message = on_message
     client.connect("10.42.0.244", 1883, 60)
+    log.debug('connected mqtt client')
 
     client.loop_start()
 
     log.debug('schedule periodic readings')
-    schedule.every(1).minutes.do(sendReadings)
+    schedule.every(60).seconds.do(sendReadings)
+
+    time.sleep(10)
+
+    while True:
+           schedule.run_pending()
+           time.sleep(1)
+
+
+#         sendReadings() 
+#         time.sleep(60)
