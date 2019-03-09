@@ -11,7 +11,8 @@ import paho.mqtt.client as mqtt
 from eq3bt import Thermostat
 
 thermostatBallpit = Thermostat('00:1A:22:0D:BE:EE')
-thermostatBallpit = Thermostat('00:1A:22:0D:BE:EE')
+thermostatCantina = Thermostat('00:1A:22:0D:C2:5D')
+
 
 temperature_off = 12
 temperature_on = 19
@@ -21,6 +22,7 @@ def on_connect(client, userdata, flags, rc):
     log.debug("Connected with result code " + str(rc))
 
     client.subscribe("foobar/oben/baellebad/heizung/action")
+    client.subscribe("foobar/oben/cantina/heizung/action")
 
     sendReadings()
 
@@ -33,6 +35,7 @@ def on_message(client, userdata, message):
     msg = message.payload.decode("utf-8")
     log.debug('received message: %s from %s', format(msg), format(message.topic))
 
+    # Baellebad
     if (message.topic == "foobar/oben/baellebad/heizung/action"):
         if (msg == "on"):
             thermostatBallpit.target_temperature=temperature_on
@@ -42,7 +45,15 @@ def on_message(client, userdata, message):
             else:
                 thermostatBallpit.target_temperature=int(msg)
 
-
+    # Cantina
+    if (message.topic == "foobar/oben/cantina/heizung/action"):
+        if (msg == "on"):
+            thermostatCantina.target_temperature=temperature_on
+        else:
+            if (msg == "off"):
+                thermostatCantina.target_temperature=temperature_off
+            else:
+                thermostatCantina.target_temperature=int(msg)
 
 def sendReadings():
     log.debug('read target temperature from thermostats')
@@ -55,12 +66,22 @@ def sendReadings():
     temp=thermostatBallpit.target_temperature
     if(temp == temperature_on):
         temp = str(temp) + " on"
-
     if(temp == temperature_off):
         temp = str(temp) + " off"
-
     client.publish("foobar/oben/baellebad/heizung/status", temp, qos=1, retain=True)
     
+    # Cantina
+    # Update readings
+    thermostatCantina.update()
+
+    # Send target temperatures
+    temp=thermostatCantina.target_temperature
+    if(temp == temperature_on):
+        temp = str(temp) + " on"
+    if(temp == temperature_off):
+        temp = str(temp) + " off"
+    client.publish("foobar/oben/cantina/heizung/status", temp, qos=1, retain=True)
+        
     log.debug('sent readings')
 
 
@@ -111,6 +132,3 @@ if __name__ == '__main__':
            schedule.run_pending()
            time.sleep(1)
 
-
-#         sendReadings() 
-#         time.sleep(60)
