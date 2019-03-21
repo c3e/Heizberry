@@ -37,6 +37,7 @@ def on_message(client, userdata, message):
 
     # Baellebad
     if (message.topic == "foobar/oben/baellebad/heizung/action"):
+        thermostatBallpit.mode="manual"
         if (msg == "on"):
             thermostatBallpit.target_temperature=temperature_on
         else:
@@ -47,6 +48,7 @@ def on_message(client, userdata, message):
 
     # Cantina
     if (message.topic == "foobar/oben/cantina/heizung/action"):
+        thermostatCantina.mode="manual"
         if (msg == "on"):
             thermostatCantina.target_temperature=temperature_on
         else:
