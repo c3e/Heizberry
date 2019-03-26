@@ -44,7 +44,7 @@ def on_message(client, userdata, message):
             if (msg == "off"):
                 thermostatBallpit.target_temperature=temperature_off
             else:
-                thermostatBallpit.target_temperature=int(msg)
+                thermostatBallpit.target_temperature=round(float(msg),1)
 
     # Cantina
     if (message.topic == "foobar/oben/cantina/heizung/action"):
@@ -55,7 +55,7 @@ def on_message(client, userdata, message):
             if (msg == "off"):
                 thermostatCantina.target_temperature=temperature_off
             else:
-                thermostatCantina.target_temperature=int(msg)
+                thermostatCantina.target_temperature=round(float(msg),1)
 
 def sendReadings():
     log.debug('read target temperature from thermostats')
@@ -66,11 +66,11 @@ def sendReadings():
 
     # Send target temperatures
     temp=thermostatBallpit.target_temperature
-    if(temp == temperature_on):
-        temp = str(temp) + " on"
-    if(temp == temperature_off):
-        temp = str(temp) + " off"
     client.publish("foobar/oben/baellebad/heizung/status", temp, qos=1, retain=True)
+    if(temp == temperature_on):
+        client.publish("foobar/oben/baellebad/heizung/status", "on", qos=1, retain=True)
+    if(temp == temperature_off):
+        client.publish("foobar/oben/baellebad/heizung/status", "off", qos=1, retain=True)
     
     # Cantina
     # Update readings
@@ -78,11 +78,12 @@ def sendReadings():
 
     # Send target temperatures
     temp=thermostatCantina.target_temperature
-    if(temp == temperature_on):
-        temp = str(temp) + " on"
-    if(temp == temperature_off):
-        temp = str(temp) + " off"
     client.publish("foobar/oben/cantina/heizung/status", temp, qos=1, retain=True)
+    if(temp == temperature_on):
+        client.publish("foobar/oben/cantina/heizung/status", "on", qos=1, retain=True)
+    if(temp == temperature_off):
+        client.publish("foobar/oben/cantina/heizung/status", "off", qos=1, retain=True)
+
         
     log.debug('sent readings')
 
