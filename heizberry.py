@@ -56,6 +56,7 @@ def on_message(client, userdata, message):
                 thermostatCantina.target_temperature=temperature_off
             else:
                 thermostatCantina.target_temperature=round(float(msg),1)
+    sendReadings()
 
 def sendReadings():
     log.debug('read target temperature from thermostats')
